@@ -3,6 +3,7 @@ import { useState } from "react";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { createExercise } from "@/lib/api";
 
 export default function Registrar() {
   const navigate = useNavigate();
@@ -10,15 +11,20 @@ export default function Registrar() {
   const [name, setName] = useState("");
   const [details, setDetails] = useState("");
   const [rest, setRest] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
-  function handleSave() {
-    console.log({
-      name,
-      details,
-      rest,
-    });
+  async function handleSave() {
+    setSaving(true);
+    setError(null);
 
-    navigate("/");
+    try {
+      await createExercise({ name, details, rest });
+      navigate("/");
+    } catch (err) {
+      setError((err as Error).message);
+      setSaving(false);
+    }
   }
 
   return (
@@ -35,7 +41,7 @@ export default function Registrar() {
           <Input
             value={details}
             onChange={(e) => setDetails(e.target.value)}
-            placeholder="Repetições e carga"
+            placeholder="Repetições"
           />
 
           <Input
@@ -44,8 +50,10 @@ export default function Registrar() {
             placeholder="Tempo de descanso"
           />
 
-          <Button onClick={handleSave}>
-            Salvar
+          {error && <p className="text-red-600">{error}</p>}
+
+          <Button onClick={handleSave} disabled={saving}>
+            {saving ? "Salvando..." : "Salvar"}
           </Button>
 
         </div>

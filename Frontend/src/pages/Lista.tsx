@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
@@ -9,53 +9,38 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
-interface Exercise {
-  id: number;
-  name: string;
-  details: string;
-  rest: string;
-}
+import {
+  deleteExercise,
+  getExercises,
+  updateExercise,
+  type Exercise,
+} from "@/lib/api";
 
 export default function Lista() {
   const [search, setSearch] = useState("");
-
-  const [exercises, setExercises] = useState<Exercise[]>([
-    {
-      id: 1,
-      name: "Supino Reto",
-      details: "4 séries de 10 reps, 60kg",
-      rest: "1 Minuto e 30 Segundos",
-    },
-    {
-      id: 2,
-      name: "Agachamento",
-      details: "3 séries de 12 reps, 80kg",
-      rest: "2 Minutos",
-    },
-    {
-      id: 3,
-      name: "Puxada Alta",
-      details: "4 séries de 12 reps, 50kg",
-      rest: "1 Minuto",
-    },
-    {
-      id: 4,
-      name: "Rosca Direta",
-      details: "3 séries de 10 reps, 15kg cada lado",
-      rest: "1 Minuto",
-    },
-  ]);
+  const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editName, setEditName] = useState("");
   const [editDetails, setEditDetails] = useState("");
   const [editRest, setEditRest] = useState("");
 
-  const handleDelete = (id: number) => {
-    setExercises(
-      exercises.filter((exercise) => exercise.id !== id)
-    );
+  useEffect(() => {
+    getExercises()
+      .then(setExercises)
+      .catch((err: Error) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleDelete = async (id: number) => {
+    try {
+      await deleteExercise(id);
+      setExercises(exercises.filter((exercise) => exercise.id !== id));
+    } catch (err) {
+      setError((err as Error).message);
+    }
   };
 
   const handleEdit = (exercise: Exercise) => {
@@ -65,24 +50,29 @@ export default function Lista() {
     setEditRest(exercise.rest);
   };
 
-  const handleSaveEdit = () => {
-    setExercises(
-      exercises.map((exercise) =>
-        exercise.id === editingId
-          ? {
-              ...exercise,
-              name: editName,
-              details: editDetails,
-              rest: editRest,
-            }
-          : exercise
-      )
-    );
+  const handleSaveEdit = async () => {
+    if (editingId === null) return;
 
-    setEditingId(null);
-    setEditName("");
-    setEditDetails("");
-    setEditRest("");
+    try {
+      const updated = await updateExercise(editingId, {
+        name: editName,
+        details: editDetails,
+        rest: editRest,
+      });
+
+      setExercises(
+        exercises.map((exercise) =>
+          exercise.id === editingId ? updated : exercise
+        )
+      );
+
+      setEditingId(null);
+      setEditName("");
+      setEditDetails("");
+      setEditRest("");
+    } catch (err) {
+      setError((err as Error).message);
+    }
   };
 
   const filteredExercises = exercises.filter(
@@ -122,8 +112,16 @@ export default function Lista() {
           />
         </div>
 
+        {error && (
+          <div className="mb-6 text-center text-red-600">{error}</div>
+        )}
+
         <section className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {filteredExercises.length === 0 ? (
+          {loading ? (
+            <div className="col-span-full text-center text-gray-500 text-lg">
+              Carregando exercícios...
+            </div>
+          ) : filteredExercises.length === 0 ? (
             <div className="col-span-full text-center text-gray-500 text-lg">
               Nenhum exercício encontrado.
             </div>
@@ -156,7 +154,7 @@ export default function Lista() {
                         onChange={(e) =>
                           setEditDetails(e.target.value)
                         }
-                        placeholder="Repetições e carga"
+                        placeholder="Repetições"
                         className="bg-white text-black"
                       />
 
@@ -202,7 +200,7 @@ export default function Lista() {
 
                       <div className="flex gap-2">
                         <Button
-                          className="bg-blue-600 hover:bg-blue-700"
+                          className="bg-gray-800 hover:bg-gray-900"
                           onClick={() =>
                             handleEdit(exercise)
                           }

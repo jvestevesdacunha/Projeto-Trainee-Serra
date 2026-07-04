@@ -1,0 +1,29 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "API do sistema de controle de treinos em academias",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/http/server.ts",
+    "start": "tsx src/http/server.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@tsconfig/node24": "^24.0.4",
+    "@types/node": "^25.9.1",
+    "prisma": "^6",
+    "tsx": "^4.19.4",
+    "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.2.0",
+    "@prisma/client": "^6",
+    "dotenv": "^17.4.2",
+    "fastify": "^5.9.0",
+    "fastify-type-provider-zod": "^7.0.0",
+    "zod": "^4.4.3"
+  }
+}

@@ -3,14 +3,15 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
 model Exercise {
   id        Int      @id @default(autoincrement())
-  name      String
-  details   String
-  rest      String
+  name      String   @db.VarChar(100)
+  details   String   @db.VarChar(255)
+  rest      String   @db.VarChar(50)
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
