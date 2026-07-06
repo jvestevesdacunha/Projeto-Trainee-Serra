@@ -23,8 +23,8 @@ npm
 Git
 
 ## 1. Clonar o repositório
-git clone 
-cd 
+git clone https://github.com/jvestevesdacunha/Projeto-Trainee-Serra.git
+cd Projeto-Trainee-Serra
 
 ## 2. Instalar as dependências
 
